@@ -2,7 +2,6 @@ from PySide6.QtCore import QUrl, Qt
 from PySide6.QtGui import QKeySequence, QAction
 from PySide6.QtWidgets import (
     QDockWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QWidget,
-    QLabel,
 )
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -34,39 +33,36 @@ class GuidePanel(QDockWidget):
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         nav = QHBoxLayout()
+        nav.setContentsMargins(4, 4, 4, 4)
+        nav.setSpacing(2)
+
         self._btn_back = QPushButton("\u2190")
-        self._btn_back.setFixedWidth(30)
+        self._btn_back.setFixedSize(28, 24)
         self._btn_back.clicked.connect(self._go_back)
         nav.addWidget(self._btn_back)
 
         self._btn_forward = QPushButton("\u2192")
-        self._btn_forward.setFixedWidth(30)
+        self._btn_forward.setFixedSize(28, 24)
         self._btn_forward.clicked.connect(self._go_forward)
         nav.addWidget(self._btn_forward)
 
         self._url_bar = QLineEdit()
+        self._url_bar.setFixedHeight(24)
         self._url_bar.returnPressed.connect(self._load_url)
         nav.addWidget(self._url_bar)
-
-        self._status = QLabel()
-        self._status.setFixedWidth(120)
-        nav.addWidget(self._status)
 
         layout.addLayout(nav)
 
         self._profile = _get_profile(profile_name)
-
-        self._page = QWebEnginePage(self._profile, None)
-        self._page.urlChanged.connect(self._on_url_changed)
-        self._page.loadStarted.connect(self._on_load_started)
-        self._page.loadProgress.connect(self._on_load_progress)
-        self._page.loadFinished.connect(self._on_load_finished)
-
         self._view = QWebEngineView()
+        self._page = QWebEnginePage(self._profile, self._view)
         self._view.setPage(self._page)
-        layout.addWidget(self._view)
+        self._page.urlChanged.connect(self._on_url_changed)
+
+        layout.addWidget(self._view, 1)
 
         self.setWidget(container)
         self._view.load(QUrl(url))
@@ -91,15 +87,6 @@ class GuidePanel(QDockWidget):
 
     def _on_url_changed(self, url: QUrl):
         self._url_bar.setText(url.toString())
-
-    def _on_load_started(self):
-        self._status.setText("Загрузка...")
-
-    def _on_load_progress(self, progress: int):
-        self._status.setText(f"Загрузка {progress}%")
-
-    def _on_load_finished(self, ok: bool):
-        self._status.setText("✓" if ok else "✗ Ошибка")
 
     def _load_url(self):
         text = self._url_bar.text().strip()
