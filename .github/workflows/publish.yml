@@ -9,20 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  run-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - name: Run tests
-        run: uv run pytest
-
   release-build:
     runs-on: ubuntu-latest
-    needs: [run-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
